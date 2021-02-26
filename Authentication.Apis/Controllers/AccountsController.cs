@@ -82,7 +82,7 @@ namespace Authentication.Apis.Controllers
             return Ok(await _userManager.FindByIdAsync(loggedInUserId));
         }
 
-        [HttpGet]
+        [HttpPost]
         [Authorize]
         public async Task<IActionResult> Delete(DeleteAccountInputModel input)
         {
@@ -105,6 +105,9 @@ namespace Authentication.Apis.Controllers
             {
                 return BadRequest("Failed to delete user account. Please try again.");
             }
+            
+            // sign-out if account deleted successfully
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             return Ok("Account deleted successfully.");
         }
