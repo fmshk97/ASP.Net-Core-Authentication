@@ -15,15 +15,15 @@ namespace Authentication.Apis.Controllers
     [ApiController]
     public class AccountsController : Controller
     {
-        private readonly UserManager<AppUser> _userManager;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public AccountsController(UserManager<AppUser> userManager)
+        public AccountsController(UserManager<IdentityUser> userManager)
         {
             _userManager = userManager;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register([FromBody] RegistrationInputModel registrationInput)
+        public async Task<IActionResult> Register([FromBody] RegisterAccountInputModel registrationInput)
         {
             var user = await _userManager.FindByNameAsync(registrationInput.UserName);
             if (user != null)
@@ -31,7 +31,7 @@ namespace Authentication.Apis.Controllers
                 return BadRequest("User already exists.");
             }
 
-            user = new AppUser
+            user = new IdentityUser
             {
                 Id = Guid.NewGuid().ToString(),
                 UserName = registrationInput.UserName,
@@ -49,7 +49,7 @@ namespace Authentication.Apis.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login([FromBody] LoginInputModel loginInput)
+        public async Task<IActionResult> Login([FromBody] LoginAccountInputModel loginInput)
         {
             var user = await _userManager.FindByNameAsync(loginInput.UserName);
 
@@ -80,6 +80,33 @@ namespace Authentication.Apis.Controllers
         {
             var loggedInUserId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             return Ok(await _userManager.FindByIdAsync(loggedInUserId));
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Delete(DeleteAccountInputModel input)
+        {
+            var loggedInUserName = User.FindFirst(ClaimTypes.Name).Value;
+            var user = await _userManager.FindByNameAsync(loggedInUserName);
+
+            if (user == null)
+            {
+                return BadRequest("User doesn't exist.");
+            }
+
+            var isValidPassword = await _userManager.CheckPasswordAsync(user, input.Password);
+            if (!isValidPassword)
+            {
+                return BadRequest("Incorrect Password.");
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                return BadRequest("Failed to delete user account. Please try again.");
+            }
+
+            return Ok("Account deleted successfully.");
         }
     }
 }

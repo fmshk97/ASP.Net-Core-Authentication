@@ -2,7 +2,7 @@
 
 namespace Authentication.Apis.Models
 {
-    public class RegistrationInputModel
+    public class RegisterAccountInputModel
     {
         public string UserName { get; set; }
 

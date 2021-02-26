@@ -2,10 +2,8 @@
 
 namespace Authentication.Apis.Models
 {
-    public class LoginInputModel
+    public class DeleteAccountInputModel
     {
-        public string UserName { get; set; }
-
         [DataType(DataType.Password)]
         public string Password { get; set; }
     }
