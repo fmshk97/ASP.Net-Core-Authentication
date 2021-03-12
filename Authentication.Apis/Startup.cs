@@ -26,10 +26,9 @@ namespace Authentication.Apis
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<IdentityDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("UsersDb"), optionsBuilder => {
+                options.UseSqlServer(GetDbConnectionString(), optionsBuilder => {
                     optionsBuilder.MigrationsAssembly(typeof(Startup).Assembly.GetName().Name);
                 }));
-
 
             services.AddIdentityCore<IdentityUser>(options => {
                 options.User.AllowedUserNameCharacters = "hojn._";
@@ -78,5 +77,21 @@ namespace Authentication.Apis
                 }
                 return existingRedirector(context);
             };
+
+        private string GetDbConnectionString()
+        {
+            var dbServer = Configuration["Db:Server"];
+            var dbPort = Configuration["Db:Port"];
+            var dbUsername = Configuration["Db:Username"];
+            var dbPassword = Configuration["Db:Password"];
+            var dbName = Configuration["Db:Name"];
+
+            if (!string.IsNullOrWhiteSpace(dbPort))
+            {
+                return $"Server={dbServer},{dbPort};Database={dbName};User Id={dbUsername};password={dbPassword};trusted_connection=no;MultipleActiveResultSets=true;";
+            }
+
+            return $"Server={dbServer};Database={dbName};User Id={dbUsername};password={dbPassword};trusted_connection=no;MultipleActiveResultSets=true;";
+        }
     }
 }
